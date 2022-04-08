@@ -1,5 +1,6 @@
 ---
 title: 用HEXO从零开始搭建个人博客
+toc: true
 ---
 **摘要：一篇如何使用Github Pages和Hexo搭建自己的个人博客的教程，里面介绍了如何使用和配置Hexo框架，如何将Hexo部署到自己的Github项目中，如何注册域名以及将自己的域名关联到Github Pages上。**
 
