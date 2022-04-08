@@ -1,9 +1,19 @@
 ---
 title: 用HEXO从零开始搭建个人博客
+categories:
+- CS
+- Blog
+tags:
+- Hexo
+- Github
+- Blog
+- https
 toc: true
+thumbnail: 'https://img-blog.csdnimg.cn/b2ebc36c1fa84661a59b1d619659b8aa.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAemhhbmdfX3N4,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center'
+cover: 'https://img-blog.csdnimg.cn/b2ebc36c1fa84661a59b1d619659b8aa.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAemhhbmdfX3N4,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center'
 ---
 **摘要：一篇如何使用Github Pages和Hexo搭建自己的个人博客的教程，里面介绍了如何使用和配置Hexo框架，如何将Hexo部署到自己的Github项目中，如何注册域名以及将自己的域名关联到Github Pages上。**
-
+<!-- more -->
 
 
 # 前言
