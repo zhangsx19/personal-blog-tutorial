@@ -2,10 +2,10 @@ title: Hexo
 subtitle: ''
 description: ''
 keywords: null
-author: John Doe
+author: Shixuan Zhang
 language: en
 timezone: ''
-url: http://example.com
+url: https://sx-zhang.top/
 permalink: ':year/:month/:day/:title/'
 permalink_defaults: null
 pretty_urls:
