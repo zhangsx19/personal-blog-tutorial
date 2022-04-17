@@ -1258,6 +1258,11 @@
   "resolved" "https://registry.npmjs.org/command-exists/-/command-exists-1.2.9.tgz"
   "version" "1.2.9"
 
+"commander@^2.19.0":
+  "integrity" "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="
+  "resolved" "https://registry.npmjs.org/commander/-/commander-2.20.3.tgz"
+  "version" "2.20.3"
+
 "commander@^5.1.0":
   "integrity" "sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg=="
   "resolved" "https://registry.npmjs.org/commander/-/commander-5.1.0.tgz"
@@ -1849,6 +1854,15 @@
   dependencies:
     "nanocolors" "^0.2.12"
 
+"hexo-math@^4.0.0":
+  "integrity" "sha512-oMVa9bVXljQ8F3y0euVwOhkkiTfH3vxEV+dWT7lWbxNjtxV9MvpTG4BkDNSgM1frv+sP549FuPx39KqqEHmAgA=="
+  "resolved" "https://registry.npmjs.org/hexo-math/-/hexo-math-4.0.0.tgz"
+  "version" "4.0.0"
+  dependencies:
+    "hexo-util" "^2.2.0"
+    "katex" "^0.12.0"
+    "mathjax" "^3.0.5"
+
 "hexo-pagination@^2.0.0":
   "integrity" "sha512-ZZQli5UwFWTW6bJNF4zwp2PCeGsipgoPxadud8+cPPxvygTP5GjTS5eVWcUTcfEaCluP+O1maxZCCWmYQoJkiQ=="
   "resolved" "https://registry.npmjs.org/hexo-pagination/-/hexo-pagination-2.0.0.tgz"
@@ -2240,6 +2254,13 @@
     "jsonparse" "^1.2.0"
     "through" ">=2.2.7 <3"
 
+"katex@^0.12.0":
+  "integrity" "sha512-y+8btoc/CK70XqcHqjxiGWBOeIL8upbS0peTPXTvgrh21n1RiWWcIpSWM+4uXq+IAgNh9YYQWdc7LVDPDAEEAg=="
+  "resolved" "https://registry.npmjs.org/katex/-/katex-0.12.0.tgz"
+  "version" "0.12.0"
+  dependencies:
+    "commander" "^2.19.0"
+
 "kind-of@^6.0.2":
   "integrity" "sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw=="
   "resolved" "https://registry.npmjs.org/kind-of/-/kind-of-6.0.3.tgz"
@@ -2290,6 +2311,11 @@
   "integrity" "sha512-hgibXWrEDNBWgGiK18j/4lkS6ihTe9sxtV4Q1OQppb/0zzyPSzoFANBa5MfsG/zgsWklmNnhm0XACZOH/0HBiQ=="
   "resolved" "https://registry.npmjs.org/marked/-/marked-4.0.12.tgz"
   "version" "4.0.12"
+
+"mathjax@^3.0.5":
+  "integrity" "sha512-PL+rdYRK4Wxif+SQ94zP/L0sv6/oW/1WdQiIx0Jvn9FZaU5W9E6nlIv8liYAXBNPL2Fw/i+o/mZ1212eSzn0Cw=="
+  "resolved" "https://registry.npmjs.org/mathjax/-/mathjax-3.2.0.tgz"
+  "version" "3.2.0"
 
 "micro-memoize@^4.0.9":
   "integrity" "sha512-Z2uZi/IUMGQDCXASdujXRqrXXEwSY0XffUrAOllhqzQI3wpUyZbiZTiE2JuYC0HSG2G7DbCS5jZmsEKEGZuemg=="
