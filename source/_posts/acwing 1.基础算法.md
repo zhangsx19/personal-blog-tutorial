@@ -76,6 +76,13 @@ void quick_sort(int q[], int l, int r)
     quick_sort(q, l, j), quick_sort(q, j + 1, r);
 }
 ```
+注意：分界点不一定=x
+#### 变形：第k个数
+![20220419055456](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220419055456.png)
+
+k每次更新成新区间第k小的数，所以每次新区间要重新编号
+
+时间复杂度O(2n)
 ### 归并排序 --分治
 快排是先排后递归，归并是先递归再排
 ```
@@ -301,6 +308,23 @@ int main(){
 ### (2)二维
 ![20220415121504](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220415121504.png)
 ---
+
+## 3.差分
+### (1)一维
+差分是前缀的逆运算
+
+![20220418214005](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220418214005.png)
+
+构造：初始化$\{a_n\},\{b_n\}$为0，看做n次插入，每次插入$a_n$,插入时可看做[n,n]区间加上$c = a_n$,所以不需要考虑构造的问题。即先构造$\{b_n\}$,再根据$\{b_n\}$写出$\{a_n\}$
+
+复杂度：每次+c从O(n)-->O(1)
+
+### (2)二维
+a[i][j]存放差分数组b[i][j]所有左上角的和
+
+$b_{x1,y1}+=c,则该点所有右下角的a都会+c$
+
+![20220419003428](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220419003428.png)
 
 ---
 # 总结
