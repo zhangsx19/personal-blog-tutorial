@@ -1,5 +1,5 @@
 ---
-title: acwing 2.数据结构
+title: acwing 3.搜索图论
 date: 2022-04-14 10:35:24
 categories:
 - CS
@@ -97,13 +97,27 @@ queue里存的是每次更新后到起点距离变小的点，入队时要判断一下如果队列已经有b就不用
 d[N][N]为邻接矩阵
 重边和自环：d[a][b] = min(d[a][b],w);
 # 十、prim
-
+## 朴素prim
+![20220512092509](https://s2.loli.net/2022/05/12/gQhswZDKifJBuoj.png)
+由 V 中的全部 n 个顶点和 E 中 n?1 条边构成的无向连通子图被称为 G 的一棵生成树，其中边的权值之和最小的生成树被称为无向图 G 的最小生成树。
+dijkstra的dist表示的是点到1号点的最小距离，prim的dist表示的是点的集合的最小距离
+![20220512100851](https://s2.loli.net/2022/05/12/m5aQGvirOWsKXF7.png)
+## 堆优化(不会用到)
+![20220512102256](https://s2.loli.net/2022/05/12/eIyGbM6u1TcstCK.png)
 # 十一、Kruskal
+![20220512103632](https://s2.loli.net/2022/05/12/4CTxA1S3d8RKXvH.png)
+贪心思想：从小到大枚举每条边，如果后来的边已经有比它小的边在集合里了就不加入
+第二步实现：并查集
+如果加到集合的边数<n-1，则说明其不连通
 
 # 十二、染色法判定二分图
-
+![20220512112412](https://s2.loli.net/2022/05/12/d8sq94iLTkgPVHM.png)
 # 十三、匈牙利算法
- 
+可以得出成功匹配的最大数量
+![20220512115447](https://s2.loli.net/2022/05/12/eSdtyPEcVlkUJnC.png)
+st的作用：st[e[i]] = 1;一方面防止find(match[e[i]])又匹配到了e[i]，另一方面如果这次匹配失败，说明match[e[i]]不能改动，之后递归过程中其他男生准备换女生的时候不用尝试e[i]了
+
+
 ---
 # 总结
 
