@@ -80,7 +80,21 @@ command1 || command2 ：command1执行失败，再执行command2(若command1执行成功，就不
 ```
 
 ## simple js
+"\x49\x51\x5a\x56\x54"是C/C++ 里普通的转义字符。直接用cout 或者 printf 就能显示出来。
+发现是55,56,54,79,115,69,114,116,107,49,50
+var n = String.fromCharCode(65);//n = A ,将 Unicode 编码转为一个字符
+```
+js中的连等号顺序：
+多次赋值与顺序无关，是同时进行赋值的
+每个节点的变量最终赋值的值取决去最后一个等号的右边值
+如果赋值是引用类型，则最终指向的是同一个对象
 
+JavaScript数组越界访问不会报错，只会返回undefined。
+```
+代码审计发现结果只与pass有关，即输出FAUX PASSWORD HAHA，与输入无关
+另一个有意义的字符就是string里的了，想到把pass换成string执行一下,p += chr(int(t2[17]))要换成string的最后一个
+exp如下：
+![20220516233104](https://s2.loli.net/2022/05/16/uUWRPI6pnoi2re7.png)
 ## pHp2
 ![20220516174816](https://s2.loli.net/2022/05/16/cUuTyizS9jZWbrY.png)
 
@@ -92,3 +106,28 @@ command1 || command2 ：command1执行失败，再执行command2(若command1执行成功，就不
 .phps文件就是php的源代码文件，通常用于提供给用户（访问者）查看php代码，因为用户无法直接通过Web浏览器看到php文件的内容，所以需要用phps文件代替。其实，只要不用php等已经在服务器中注册过的MIME类型为文件即可，但为了国际通用，所以才用了phps文件类型。
 它的MIME类型为：text/html, application/x-httpd-php-source, application/x-httpd-php3-source
 ```
+## ics-06
+爆破id
+intruder payload 选number
+
+## Web_php_unserialize
+```
+pHp的class
+1、__construct()：当对象创建（new）时会自动调用。但在 unserialize() 时是不会自动调用的。（构造函数）
+2、__destruct()：当对象被销毁时会自动调用。（析构函数）
+3、__wakeup()：unserialize() 时会自动调用
+4.正则表达式匹配preg_match() 函数
+```
+![20220517101903](https://s2.loli.net/2022/05/17/OesxJcE4dpGUDSg.png)
+告诉我们，这个flag在fl4g.php这个页面中，如果Demo类被销毁，那么就会高亮显示file所指向的文件的内容。
+/[oc]:\d+:/i研究
+[OC]：正则表达式以o或c开头
+```
+正则表达式是对字符串操作的一种逻辑公式，就是用事先定义好的一些特定字符、及这些特定字符的组合，组成一个“规则字符串”，
+这个“规则字符串”用来表达对字符串的一种过滤逻辑。
+\d:  匹配一个数字字符。等价于 [0-9]。
+ +:  匹配前面的子表达式一次或多次。例如，'zo+' 能匹配 "zo" 以及 "zoo"，但不能匹配 "z"。+ 等价于 {1,}。
+/i:  表示匹配的时候不区分大小写
+```
+__wakeup的绕过:
+当序列化字符串中表示对象属性个数的值大于真实的属性个数时会跳过__wakeup的执行,所以只要把`O:4:“Demo”:1:{s:10:“Demofile”;s:8:“fl4g.php”;}`中的1那改成任意比他大的数即可
