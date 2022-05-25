@@ -131,3 +131,56 @@ pHp的class
 ```
 __wakeup的绕过:
 当序列化字符串中表示对象属性个数的值大于真实的属性个数时会跳过__wakeup的执行,所以只要把`O:4:“Demo”:1:{s:10:“Demofile”;s:8:“fl4g.php”;}`中的1那改成任意比他大的数即可
+
+# 二、ctfhub
+## 1.HTTP 请求方法
+GET, POST 和 HEAD方法。
+OPTIONS, PUT, DELETE, TRACE 和 CONNECT 方法
+```
+OPTIONS
+返回服务器针对特定资源所支持的HTTP请求方法，也可以利用向web服务器发送‘*’的请求来测试服务器的功能性
+PUT
+向指定资源位置上传其最新内容
+DELETE
+请求服务器删除Request-URL所标识的资源
+TRACE
+回显服务器收到的请求，主要用于测试或诊断
+CONNECT
+HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器。
+```
+
+## 2.HTTP临时重定向
+返回302响应码，临时跳转到location
+注意burp要开启拦截服务器响应
+
+## 3.基础认证
+基本认证（Basic access authentication）是允许http用户代理（如：网页浏览器）在请求时，提供 用户名 和 密码 的一种方式
+在进行基本认证的过程里，请求的HTTP头字段会包含Authorization字段，形式如下： Authorization: Basic <凭证>，该凭证是用户和密码的组和的base64编码。如
+```
+GET /private/index.html HTTP/1.0
+Host: localhost
+Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+```
+缺点：基本认证并没有为传送凭证（transmitted credentials）提供任何机密性的保护。仅仅使用 Base64 编码并传输，而没有使用任何 加密 或 散列算法。因此，基本认证常常和 HTTPS 一起使用，以提供机密性。
+密码爆破，要去掉有效载荷编码
+
+## 4.xss
+url编解码：我们都知道Http协议中参数的传输是"key=value"这种简直对形式的，如果要传多个参数就需要用“&”符号对键值对进行分割。如"?name1=value1&name2=value2"，这样在服务端在收到这种字符串的时候，会用“&”分割出每一个参数，然后再用“=”来分割出参数值。
+取出value时会进行url解码(hello不管解多少次都是hello)
+send相当于机器人自动点击我们提交的网址
+![20220521172751](https://s2.loli.net/2022/05/21/954LW8jHf1bKxdE.png)
+
+# 三、HackingLab 网络信息安全攻防学习平台
+## 1.脚本关
+通过`<script>window.location="./no_key_is_here_forever.php"; </script>`重定向了
+script的src 属性规定外部脚本文件的 URL。
+## 2.XSS基础3:检测与构造
+查看哪些标签关键词没有被过滤,建议准备一个txt文件专门用于检测未被过滤函数（burp就可以做）
+![20220521184317](https://s2.loli.net/2022/05/21/5B6RYPh3Dba97Qq.png)
+最后构造出Welcome <input type='text' value='123' onmouseover="eval(' ale'+'rt(HackingLab)')" s=''>
+```
+反射型：搜索
+存储型：留言板
+dom:有道翻译
+```
+[xss绕过](https://blog.csdn.net/nigo134/article/details/118827542)
