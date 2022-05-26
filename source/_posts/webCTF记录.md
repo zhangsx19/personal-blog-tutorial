@@ -170,6 +170,176 @@ url编解码：我们都知道Http协议中参数的传输是"key=value"这种简直对形式的，如果要传
 send相当于机器人自动点击我们提交的网址
 ![20220521172751](https://s2.loli.net/2022/05/21/954LW8jHf1bKxdE.png)
 
+## 5.信息泄露
+### git
+```bash
+目录扫描发现/.git
+---
+pip3 install GitHacker
+githacker --url http://127.0.0.1/.git/ --output-folder result
+--brute #暴力破解所有可能的branch名
+---
+kali里运行
+python2 GitHack.py http://www.example.com/.git/
+---
+git log
+git stash list
+git index
+git branch
+.git/config文件可能含有access_token可以访问该用户其他仓库
+```
+
+### svn(subversion)、hg、cvs、bzr
+[神器dvcs-ripper](https://github.com/kost/dvcs-ripper)
+```
+docker run --rm -it -v /path/to/host/work:/work:rw k0st/alpine-dvcs-ripper 命令
+命令有：
+rip-git.pl -v -u http://www.example.com/.git/   或者   rip-git.pl -s -v -u http://www.example.com/.git/
+rip-hg.pl -v -u http://www.example.com/.hg/     或者   rip-hg.pl -s -v -u http://www.example.com/.hg/
+rip-bzr.pl -v -u http://www.example.com/.bzr/
+rip-svn.pl -v -u http://www.example.com/.svn/
+rip-cvs.pl -v -u http://www.example.com/CVS/
+```
+svn和git的区别：
+```
+1.git是分布式的，有本地和远程两个版本库，SVN是集中式，只有一个远程版本库；
+2.git的内容是按元数据方式存贮，所有控制文件在.git中，svn是按文件处理，所有资源控制文件在.svn中；
+3.svn的分支是一个目录，git不是；
+4.git没有一个全局的版本号，svn有；
+5.git内容存贮是使用SHA-1哈希算法，能确保代码完整性;
+6.git 有工作区，暂存区，远程仓库，git add将代码提交到暂存区， commit提交到本地版本库，push推送到远程版本库。svn是add 提交到暂存，commit是提交到远程版本库。
+```
+试图从 wc.db 中找到 flag, 尝试访问结果文件名发现被删除了。
+```bash
+cat wc.db | grep -a flag
+```
+转而寻找 .svn/pristine/ 中的文件，找到 flag
+.svn目录(制作字典)：
+```
+├── pristine 各个版本纪录，这个文件一般较大
+├── tmp 
+├── entries 当前版本号
+├── format 文本文件， 放了一个整数，当前版本号
+├── wc.db 二进制文件
+├── wc.db-journal 二进制文件
+```
+[参考](https://juejin.cn/post/6960836262894764039)
+
+### .DS_Store
+.DS_Store 是 Mac OS 保存文件夹的自定义属性的隐藏文件。通过.DS_Store可以知道这个目录里面所有文件的清单。
+直接cat .DS_Store
+### 备份文件
+```py
+name = ['web','website','backup','back','www','wwwroot','temp']
+ext = ['tar','tar.gz','zip','rar']
+index.php.bak
+.index.php.swp #恢复方法是先用vim创建一个index.php,再vim -r index.php
+```
+## 6.口令爆破
+### 弱口令
+看到后台想到用户名为admin
+### 默认口令
+百度社工
+
+### 总结
+要边做题边总结出自己的字典
+
+## 7.sql注入
+用sqlmap的url一定要有参数?id=1,无脑y
+### cookie
+--level 2：等级2以上才会检测cookie注入
+--cookie:id=1 ：可能可注入的参数
+![20220526151313](https://s2.loli.net/2022/05/26/4y5NSt6qTWk8DeA.png)
+### ua
+--level 3:等级3以上才会检测ua注入
+burp抓包得到的数据放进a.txt
+![20220526155332](https://s2.loli.net/2022/05/26/dAyNkDfOxZ5RUWV.png)
+```
+sqlmap -r “a.txt” -p “User-Agent”(注意不能有-u了)
+```
+### referer注入
+--level 5
+burp抓包得到的数据发现没有Refer请求头，添加Refer请求头放进b.txt
+![20220526155226](https://s2.loli.net/2022/05/26/ABjKmUeYPMIEWSu.png)
+注入命令
+```
+sqlmap -r "b.txt" --level 5 -p "referer"
+```
+### 绕过空格
+sqlmap自带space2comment.py 脚本，用法是--tamper "space2comment.py"
+
+ sqlmap 中的 tamper 脚本有很多，例如： equaltolike.py （作用是用like代替等号）、 apostrophemask.py （作用是用utf8代替引号）、 greatest.py （作用是绕过过滤'>' ,用GREATEST替换大于号）等。
+
+## 8.文件上传
+菜刀蚁剑这些必须用_POST[]传
+为什么要上传PHP木马而不是JSP,ASPX的木马
+```bash
+通过环境来看，基本判断方式有以下几种：
+1.看文件后缀 #如网页显示 xxxx.com/index.php,或者右键源代码中，表单提交action="upload.php"
+2.插件检测（Wappalyzer插件）#可以检测当前页面的基础环境，如中间件，前后端语言等
+3.响应包判断 #看响应包如burpsuite的响应包如下：X-Powered-By: PHP/7.3.14
+```
+步骤：
+```
+1.先看前端绕过
+2.大小写、'php '、'php.'、'php::$DATA'(网站服务器是windows才行)
+
+```
+### .htaccess
+.htaccess文件(在www文件夹)是Apache服务器中的一个配置文件，用于控制它所在的目录以及该目录下的所有子目录。通过htaccess文件，可以帮我们实现：网页301重定向、自定义404错误页面、`改变文件扩展名`、允许/阻止特定的用户或者目录的访问、禁止目录列表、配置默认文档等功能
+源代码如下，用黑名单禁止了php上传，但我们可以写个黑名单没有的.htaccess文件上传到upload目录从而控制该目录，至于原目录的.htaccess会被覆盖掉
+![20220526182945](https://s2.loli.net/2022/05/26/Rn56gD4rXqK23U8.png)
+```php
+move_uploaded_file() 函数将上传的文件移动到新位置。
+若成功，则返回 true，否则返回 false .(本函数仅用于通过 HTTP POST 上传的文件。)
+注意：如果目标文件已经存在，将会被覆盖。
+```
+在低于2.3.8版本时，因为默认AllowOverride为all，可以尝试上传.htaccess文件修改部分配置
+```
+方法一：
+<FilesMatch "文件名的部分">  
+SetHandler application/x-httpd-php
+</FilesMatch>
+方法二：
+AddHandler php5-script .php
+# 在文件拓展名和解释器之间建立映射
+# 指定拓展名为.php的文件应被php5-script解释
+```
+
+### 00截断
+%00   , 0x00   , /00   都属于00截断,利用的是服务器的解析漏洞(ascii中0表示字符串结束),所以读取字符串到00就会停止,认为已经结束。
+![20220526201804](https://s2.loli.net/2022/05/26/rcopi4X6sRL2AQD.png)
+_FILE['name']会自动进行一次截断，所以上传的文件无法用00截断，但抓包发现road是通过_GET得到的，而_GET不会自动截断，所以可以用00截断掉`$des`后面的内容，让`$des`为upload/test.php
+jdk7u40版本以下存在00截断，以上的版本会调用File的isInvalid()判断文件名是否合法(是否存在\0)。
+![20220526205114](https://s2.loli.net/2022/05/26/2OKQeXVtLwamq4k.png)
+PHP低于5.4版本时，如果用iconv()函数把utf8的字符转换成其他类型，而且转换的字符不在utf8的单字节范围(0x00-0x7F)内，转换时就会把其和后面的字符截断。php高于5.4时会返回fasle
+
+### MIME绕过
+在HTTP中MIME类型被定义header的Content-Type中。此处便是我们进行绕过检测成功上传的核心
+![20220526211253](https://s2.loli.net/2022/05/26/zGmMR3epWCtEVvP.png)
+
+### 文件头检测
+随便找张png,上传抓包,只保留文件头几行的内容，后面的全删掉(太多内容蚁剑就连不上了)，然后在最后一行加上php代码，再改下文件后缀名
+
+### .user.ini
+局限：只有当前目录有php文件被执行时才会加载当前目录的.user.ini
+
+## 9.Rce(远程命令执行)
+&& ||
+![20220526213738](https://s2.loli.net/2022/05/26/37lK5pmUBWJQtYn.png)
+windows:
+%0a、&、|(忽略前一个)、&&、||(忽略后一个)、%1a(一个神奇的角色,作为.bat文件中的命令分隔符)
+linux中:%0a 、%0d 、; 、& 、| 、&&、|| 
+windows转义字符为'^',Linux转义字符为'\'
+windows注释为::，Linux注释为#
+
+### 文件包含
+可以包含含有php代码的txt文件等，php代码会在传参后的页面执行
+php伪协议：php://
+![20220526220509](https://s2.loli.net/2022/05/26/1DCsFxBzcRywWNl.png)
+![20220526220459](https://s2.loli.net/2022/05/26/OXId4RwEkCLmZQH.png)
+此时php://input相当于一个文件
+![20220526221614](https://s2.loli.net/2022/05/26/gEkHI8zTbp3siyF.png)
 # 三、HackingLab 网络信息安全攻防学习平台
 ## 1.脚本关
 通过`<script>window.location="./no_key_is_here_forever.php"; </script>`重定向了
@@ -184,3 +354,4 @@ script的src 属性规定外部脚本文件的 URL。
 dom:有道翻译
 ```
 [xss绕过](https://blog.csdn.net/nigo134/article/details/118827542)
+

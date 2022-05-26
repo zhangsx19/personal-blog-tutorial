@@ -435,7 +435,8 @@ git commit #添加到版本库的一个版本
 git diff XX #查看XX文件相对于暂存区(若暂存区是空，则是HEAD)修改了哪些内容
 git restore readme.txt #将工作区的文件恢复到暂存区的状态，若暂存区是空，则恢复到HEAD的状态
 git restore --staged readme.txt #把文件从暂存区删除，staged即为暂存区
-git log #查看版本从起点到HEAD的路线   
+git log #查看版本从起点到HEAD的路线 
+git reflog #查看HEAD指针的移动历史（包括被回滚的版本）  
 git reset --hard HEAD^ 或 git reset --hard HEAD~：将代码库回滚到上一个版本，但并不会删除新版本
 git reset --hard HEAD^^：往上回滚两次，以此类推
 git reset --hard HEAD~100：往上回滚100个版本
@@ -461,6 +462,14 @@ git pull origin branch_name #将远程仓库的branch_name分支与本地仓库�
 ```
 两个分支都修改了readme.txt
 
+## git stash栈
+```bash
+git stash #将工作区和暂存区中尚未提交的修改存入栈中
+git stash apply #将栈顶存储的修改恢复到当前分支，但不删除栈顶元素
+git stash drop #删除栈顶存储的修改
+git stash pop #将栈顶存储的修改恢复到当前分支，同时删除栈顶元素
+git stash list #查看栈中所有元素
+```
 # 六、apache thrift(remote procedure call)
 解耦合的微服务框架，不同服务既可以在同一个服务器，也可以在不同服务器上。thrift提供通信服务(类似socket)，即服务器调用另外一台服务器的进程
 ![20220522134018](https://s2.loli.net/2022/05/22/Q7zl6Vu8dfn2RHj.png)
