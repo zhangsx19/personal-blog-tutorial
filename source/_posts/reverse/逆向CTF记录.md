@@ -2,7 +2,6 @@
 title: 逆向CTF记录
 date: 2022-05-02 18:28:53
 categories:
-- CS
 - security
 tags:
 - reverse

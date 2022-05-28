@@ -2,7 +2,6 @@
 title: webCTF记录
 date: 2022-05-02 18:28:53
 categories:
-- CS
 - security
 tags:
 - web

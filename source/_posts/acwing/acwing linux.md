@@ -2,11 +2,9 @@
 title: acwing linux
 date: 2022-04-14 10:35:24
 categories:
-- CS
-- security
+- acwing
 tags:
 - linux
-- server
 toc: true
 ---
 **摘要：acwing linux课学习笔记**

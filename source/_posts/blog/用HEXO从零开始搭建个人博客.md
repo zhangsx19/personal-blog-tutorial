@@ -1,13 +1,10 @@
 ---
 title: 用HEXO从零开始搭建个人博客
 categories:
-- CS
 - Blog
 tags:
 - Hexo
 - Github
-- Blog
-- https
 toc: true
 thumbnail: 'https://img-blog.csdnimg.cn/b2ebc36c1fa84661a59b1d619659b8aa.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAemhhbmdfX3N4,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center'
 cover: 'https://img-blog.csdnimg.cn/b2ebc36c1fa84661a59b1d619659b8aa.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAemhhbmdfX3N4,size_20,color_FFFFFF,t_70,g_se,x_16#pic_center'

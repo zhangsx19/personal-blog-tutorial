@@ -2,14 +2,10 @@
 title: sqlmap的ip黑名单绕过
 date: 2022-04-16 00:02:42
 categories:
-- CS
 - security
 tags:
-- spider
-- redis
 - proxypool
 - tor
-- socks5
 toc: true
 ---
 **摘要：本文提出了两种sqlmap绕过ip黑名单的方法。分别是基于github上的ProxyPool项目搭建自己的免费代理池，和基于tor实现ip实时变化。**

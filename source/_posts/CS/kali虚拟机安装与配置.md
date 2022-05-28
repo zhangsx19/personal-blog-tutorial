@@ -3,7 +3,6 @@ title: kali虚拟机安装与配置
 date: 2022-04-10 15:41:22
 categories:
 - CS
-- security
 tags:
 - kali
 - vmware

@@ -2,10 +2,8 @@
 title: sql注入和sqlmap
 date: 2022-04-10 16:26:17
 categories:
-- CS
 - security
 tags:
-- security
 - sql注入
 - splmap
 toc: true

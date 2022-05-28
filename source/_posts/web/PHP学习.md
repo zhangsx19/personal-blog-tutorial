@@ -2,11 +2,9 @@
 title: php学习
 date: 2022-05-22 18:28:53
 categories:
-- CS
 - security
 tags:
-- web
-- CTF
+- PHP
 toc: true
 ---
 **摘要：本文记录php学习过程**

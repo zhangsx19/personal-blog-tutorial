@@ -2,11 +2,9 @@
 title: python_scrapy
 date: 2022-05-25 16:58:50
 categories:
-- CS
 - security
 tags:
 - scrapy
-- python
 toc: true
 ---
 **摘要：本文记录python_scrapy的学习**

@@ -2,12 +2,9 @@
 title: acwing 4.数学知识
 date: 2022-04-14 10:35:24
 categories:
-- CS
-- algorithm
+- acwing
 tags:
 - algorithm
-- acwing
-- C++
 toc: true
 ---
 **摘要：acwing算法基础课学习笔记**
