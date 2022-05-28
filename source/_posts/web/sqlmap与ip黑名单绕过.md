@@ -1,5 +1,5 @@
 ---
-title: sqlmap与ip黑名单绕过
+title: sqlmap的ip黑名单绕过
 date: 2022-04-16 00:02:42
 categories:
 - CS

@@ -9,7 +9,7 @@ tags:
 - python
 toc: true
 ---
-**摘要：本文介绍了爬虫项目**
+**摘要：本文记录python_scrapy的学习**
 <!-- more -->
 # 安装依赖
 ```bash

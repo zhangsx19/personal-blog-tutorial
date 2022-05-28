@@ -5,17 +5,11 @@ categories:
 - CS
 - security
 tags:
-- python
 - robots协议
-- spider
-- url
 toc: true
 ---
 **摘要：本文介绍了Robots协议是什么，以及如何利用urllib的robotparser模块，实现网站Robots协议的分析**
 <!-- more -->
-# 前言
-做XCTF时遇到了[Robots协议](https://adworld.xctf.org.cn/task/answer?type=web&number=3&grade=0&id=5063&page=1),特此记录。
-
 ---
 # 一、前置内容
 ## 1.区分进程和线程
@@ -53,7 +47,7 @@ toc: true
 -GPU进程：最多一个，用于3D绘制等。
 ```
 
-## 4.输入网址并解析
+## 4.缓存
 这里我们只考虑输入的是一个URL结构字符串，如果是非 URL 结构的字符串，则会用浏览器默认的搜索引擎搜索该字符串。
 
 ![20220409152032](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220409152032.png)
@@ -69,20 +63,8 @@ toc: true
 由于安全隐患，会使用 HSTS 强制客户端使用 HTTPS 访问页面。详见：[你所不知道的 HSTS](https://www.barretlee.com/blog/2015/10/22/hsts-intro/)。
 当你的网站均采用 HTTPS，并符合它的安全规范，就可以申请加入 HSTS 列表，之后用户不加 HTTPS 协议再去访问你的网站，浏览器都会定向到 HTTPS。无论匹配到没有，都要开始 DNS 查询工作了。
 
-## 6.DNS域名解析
-在发起http请求之前，浏览器首先要做去获得我们想访问网页的IP地址，(如百度的IP是202.108.22.5，在浏览器中输入https://baidu.com和http://202.108.22.5是等价的）浏览器会发送一个UDP的包给DNS域名解析服务器
-
-![20220409153058](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220409153058.png)
-
-## 7.备份文件名
-常用的备份文件名有.git,.svn,.swp,.~,.bak,.bash_history
-
 # 二、robots协议
-Robots协议也称作爬虫协议、机器人协议，它的全名叫作网络爬虫排除标准（Robots Exclusion Protocol），用来告诉爬虫和搜索引擎哪些页面可以抓取，哪些不可以抓取。它通常是一个叫作robots.txt的文本文件，一般放在网站的根目录下。
-
 当搜索爬虫访问一个站点时，它首先会检查这个站点根目录下是否存在robots.txt文件，如果存在，搜索爬虫会根据其中定义的爬取范围来爬取。如果没有找到这个文件，搜索爬虫便会访问所有没有被口令保护的页面。
-
-如下是一个robots.txt的样例：
 ```
 User-agent: *
 Disallow: /
@@ -102,20 +84,3 @@ rp.read()
 print(rp.can_fetch('*', 'http://www.jianshu.com/search?q=python&page=1&type=collections'))
 ```
 
-# 四、解题
-## 1.思路1
-![20220409154739](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220409154739.png)
-
-## 2.思路2
-利用[direarch](https://github.com/maurosoria/dirsearch)目录扫描工具暴力破解，扫到有robots.txt
----
-# 总结
-学习了robots协议和python爬虫的robotparser类。
-
----
-# 参考资料
-1. [从输入URL开始建立前端知识体系](https://juejin.cn/post/6935232082482298911)
-
-2. [【Python3网络爬虫开发实战】3.1.4-分析Robots协议](https://juejin.cn/post/6844903576142102535)
-
-3. [从浏览器多进程到JS单线程，JS运行机制最全面的一次梳理](https://juejin.cn/post/6844903553795014663)
