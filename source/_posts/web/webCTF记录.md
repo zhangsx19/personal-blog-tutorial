@@ -11,6 +11,12 @@ toc: true
 **摘要：本文记录刷过的web题**
 <!-- more -->
 ---
+# 注意
+flag的格式：
+```
+0x2d是-
+最后一位爆破 
+```
 # 一、xctf
 ## simple pHp
 ![20220516110337](https://s2.loli.net/2022/05/16/Wog1vasrdIbTc4C.png)
@@ -185,6 +191,7 @@ git log
 git stash list
 git index
 git branch
+git reset --hard HEAD^
 .git/config文件可能含有access_token可以访问该用户其他仓库
 ```
 
@@ -520,5 +527,51 @@ dom:有道翻译
 [xss绕过](https://blog.csdn.net/nigo134/article/details/118827542)
 
 # 四、ctfshow
+## 爆破
+```py
+from hashlib import md5
+dic = "0123456789qwertyuiopasdfghjklzxcvbnm"
+def isnum(a):
+    if a in "0123456789":
+        return ord(a)-ord('0')
+    else: 
+        return 0
+for i in range(0,len(dic)):
+    a = dic[i]
+    for j in range(0,len(dic)):
+        b = dic[j]
+        token = md5((a+b).encode("utf-8"))
+        token = token.hexdigest()
+        if(a+b=="3j"):
+            print(token)
+        if token[1]==token[14] and token[14] ==token[17]:
+            if isnum(token[1])!=0 and (isnum(token[1])+isnum(token[14])+isnum(token[17]))/isnum(token[1])==isnum(token[31]):
+                print(a+b)
+```
+```py
+f = open("test.txt", "w")
+for i in range(1990,2023):
+    shenfen = "621022"
+    shenfen+=str(i)
+    for j in range(1,13):
+        shenfen1 = shenfen
+        if j<10:
+            shenfen1+="0"
+        shenfen1+=str(j)
+        for k in range(1,32):
+            shenfen2 = shenfen1
+            if k<10:
+                shenfen2+="0"
+            shenfen2+=str(k)    
+            shenfen2 += "5237"
+            print(shenfen2)
+            f.write(shenfen2+"\n")
+f.close()
+```
 
+# 五、bugkuctf
+## Cookie
+```bash
+?line=1&filename=aW5kZXgucGhw //逐line读取源码
+```
 

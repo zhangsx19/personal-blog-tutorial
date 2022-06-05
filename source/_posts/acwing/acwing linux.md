@@ -469,17 +469,43 @@ git stash pop #将栈顶存储的修改恢复到当前分支，同时删除栈�
 git stash list #查看栈中所有元素
 ```
 # 六、apache thrift(remote procedure call)
+## 设计原型
 解耦合的微服务框架，不同服务既可以在同一个服务器，也可以在不同服务器上。thrift提供通信服务(类似socket)，即服务器调用另外一台服务器的进程
 ![20220522134018](https://s2.loli.net/2022/05/22/Q7zl6Vu8dfn2RHj.png)
 创建thrift文件夹存储所有thrift提供的接口
-编译：
-```bash
-g++ -c main.cpp match_server/*.cpp
-g++ *.o -o main -lthrift #需要用到thrift的动态链接库
-```
-git时最好不要把.o和二进制文件加进去
-生成的py文件有个Match-remote是用于服务端的，但我们只需要实现客户端，所以直接删掉
+
+## match_client
+生成的py文件有个Match-remote可执行文件是用于服务端的，但我们只需要实现客户端，所以直接删掉
 ![20220522151402](https://s2.loli.net/2022/05/22/gi6yN1dVmEsnOBX.png)
+先启动服务端，再客户端：
+```py
+transport.open() #连接到服务端，开始传输
+transport.close() #关闭连接
+```
+
+## match_server
+```bash
+thrift -r --gen cpp match.thrift
+#文件结构
+|-- gen-cpp
+|   |-- Match.cpp
+|   |-- Match.h
+|   |-- Match_server.skeleton.cpp
+|   |-- match_types.cpp
+|   |-- match_types.h
+|-- match.thrift
+|-- save.thrift
+```
+```bash
+g++ -c main.cpp match_server/*.cpp #头文件不用编译，会自动引用
+g++ *.o -o main -lthrift #需要用到thrift的动态链接库
+g++ *.o -o main -lthrift -pthread #用到了thread库
+```
+git时最好不要把.o,.swp和二进制文件加进去
+```bash
+git restore --stage *.o *.swp main
+```
+### 线程与锁
 服务端除了有一个线程去增减用户，还要有一个线程不断匹配用户，所以需要并行
 一个玩家匹配的时间越久，匹配的范围应该越大
 生产者-消费者模型：消费者不停消耗任务(死循环)
@@ -492,12 +518,233 @@ v(m)//其他进程被阻塞
 ```
 比如不能同时读写head
 条件变量(condition_variable)对锁进行了封装
-线程可能同时执行，即恰好同时加到了同一个head
-![20220522154444](https://s2.loli.net/2022/05/22/Uk4EOgcfbRreaWt.png)
-如两个线程同时执行，一个add拿了锁,一个remove会卡死在unique_lock直到拿锁的线
-程执行完
+```c++
+struct MessageQueue
+{
+    queue<Task> q;
+    mutex m;
+    condition_variable cv;
+}message_queue;
+```
+线程可能同时执行，即恰好同时存到了队列的同一个head，就会覆盖掉一个本应存的任务，加锁保证同一时间只能有一个线程在操作head
+用锁来操作队列：如两个线程同时执行，一个add拿了锁,一个remove会卡死在unique_lock直到拿锁的线程执行完解锁
+```c++
+int32_t add_user(const User& user, const std::string& info) {
+    // Your implementation goes here
+    printf("add_user\n");
+    unique_lock<mutex> lck(message_queue.m);//无需显式解锁，局部变量注销即解锁
+    message_queue.q.push((user,"add"));
+    return 0;
+  }
+```
+```c++
+ while(true){
+    unique_lock<mutex> lck(message_queue.m);//循环完一次会解锁再获得锁
+    if(message_queue.q.empty()){
+        //防止一直获得锁从而把进程占满
+        message_queue.cv.wait(lck);//解锁并卡在这，直至唤醒
+        //cv.notify_all();//通知所有wait的条件变量
+    }
+    else{
+        message_queue.pop();
+        lck.unlock();
+    }
+ }
+```
 刚开始时队列大概率是空，就获得锁，执行完就解锁，就会死循环，所以如果是空是就把这个进程按住，直到非空
-定义好的接口在
+
+### 多线程服务器
+```c++
+TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);//单线程处理输入输出
+//对应client.py里的一次transport.open()和transport.close()
+//如果想每调用一次就开一个线程，用多线程服务器，还要定义工厂
+```
+### 长时间匹配可降低匹配标准
+需记录当前玩家等待的秒数=>每次执行match后还在users中的玩家等待秒数+1=>只在队列为空时匹配
+![20220604002222](https://s2.loli.net/2022/06/04/sXtV2ZEqGr8cDP9.png)
+两重循环匹配(注意a要能匹配b，b也要能匹配a，因为两者匹配标准不一定相同)
+
+# 七、管道
+将一个命令执行完后的标准输出作为下一个命令的标准输入
+把标准输入看做一个文件
+```bash
+find . -name *.py | cat #会把标准输入这个文件的内容原封不动地输出
+find . -name *.py | xargs cat #xargs会把标准输入转化成文件参数给cat
+find . -name *.py | xargs cat | wc -l #wc会把标准输入作为一个文件，并统计该文件
+```
+# 八、环境变量
+列出当前环境下的所有环境变量：
+```bash
+env  # 显示当前用户的变量
+set  # 显示当前shell的变量，包括当前用户的变量;
+export  # 显示当前导出成用户变量的shell变量
+```
+```
+常见环境变量
+HOME：用户的家目录。
+PATH：可执行文件（命令）的存储路径。路径与路径之间用:分隔。当某个可执行文件同时出现在多个路径中时，会选择从左到右数第一个路径中的执行。下列所有存储路径的环境变量，均采用从左到右的优先顺序。
+LD_LIBRARY_PATH：用于指定动态链接库(.so文件)的路径，其内容是以冒号分隔的路径列表。预先编译好的，不用再编译
+C_INCLUDE_PATH：C语言的头文件路径，内容是以冒号分隔的路径列表。
+CPLUS_INCLUDE_PATH：CPP的头文件路径，内容是以冒号分隔的路径列表。
+PYTHONPATH：Python导入包的路径，内容是以冒号分隔的路径列表。从左往右的第一个
+JAVA_HOME：jdk的安装目录。
+CLASSPATH：存放Java导入类的路径，内容是以冒号分隔的路径列表。
+```
+为何将修改命令放到~/.bashrc，就可以确保修改会影响未来所有的环境呢？
+
+每次启动bash，都会先执行~/.bashrc。
+每次ssh登陆远程服务器，都会启动一个bash命令行给我们。
+每次tmux新开一个pane，都会启动一个bash命令行给我们。
+所以未来所有新开的环境都会加载我们修改的内容。
+
+ipython3和python3的区别
+```
+1.自动补全
+2.支持一些bash命令
+```
+常用命令
+```bash
+系统状况
+top：查看前几个进程的信息（Linux的任务管理器）
+打开后，输入M：按使用内存排序
+打开后，输入P：按使用CPU排序
+打开后，输入q：退出
+df -h：查看硬盘使用情况
+free -h：查看内存使用情况
+du -sh：查看当前目录占用的硬盘空间
+ps aux：查看所有进程，用于查找进程
+ps aux | grep match-server
+kill -9 pid：杀死编号为pid的进程
+传递某个具体的信号：kill -s SIGTERM pid
+netstat -nt：查看所有网络连接
+w：列出当前登陆的用户
+ping www.baidu.com：检查是否连网
+文件权限
+chmod：修改文件权限
+chmod +x xxx：给xxx添加可执行权限
+chmod -x xxx：去掉xxx的可执行权限
+chmod 777 xxx：将xxx的权限改成777
+chmod 777 xxx -R：递归修改整个文件夹的权限
+```
+![20220604114711](https://s2.loli.net/2022/06/04/ADN1WteO4fJhx5k.png)
+```bash
+文件检索
+find /path/to/directory/ -name '*.py'：搜索某个文件路径下的所有*.py文件
+grep xxx：从stdin中读入若干行数据，如果某行中包含xxx，则输出该行；否则忽略该行。
+wc：统计行数、单词数、字节数(ctrl+D结束)
+既可以从stdin中直接读入内容；也可以在命令行参数中传入文件名列表；
+wc -l：统计行数
+wc -w：统计单词数
+wc -c：统计字节数
+tree：展示当前目录的文件结构
+tree /path/to/directory/：展示某个目录的文件结构
+tree -a：展示隐藏文件
+grep xxx:统计标准输入中有多少行包含xxx
+ag xxx：搜索当前目录下的所有文件，检索xxx字符串
+cut：分割一行内容
+从stdin中读入多行数据
+echo $PATH | cut -d ':' -f 3,5：输出PATH用:分割后第3、5列数据
+echo $PATH | cut -d ':' -f 3-5：输出PATH用:分割后第3-5列数据
+echo $PATH | cut -c 3,5：输出PATH的第3、5个字符
+echo $PATH | cut -c 3-5：输出PATH的第3-5个字符
+sort：将每行内容按字典序排序
+可以从stdin中读取多行数据
+可以从命令行参数中读取文件名列表
+xargs：将stdin中的数据用空格或回车分割成命令行参数
+find . -name '*.py' | xargs cat | wc -l：统计当前目录下所有python文件的总行数
+查看文件内容
+more：浏览文件内容,展示部分内容
+回车：下一行
+空格：下一页
+b：上一页
+q：退出
+less：与more类似，功能更全
+回车：下一行
+y：上一行
+q：退出
+head -3 xxx：展示xxx的前3行内容
+同时支持从stdin读入内容
+tail -3 xxx：展示xxx末尾3行内容
+同时支持从stdin读入内容
+用户相关
+history：展示当前用户的历史操作。内容存放在~/.bash_history中
+工具
+md5sum：计算md5哈希值
+可以从stdin读入内容
+也可以在命令行参数中传入文件名列表；
+time command：统计command命令的执行时间
+ipython3：交互式python3环境。可以当做计算器，或者批量管理文件。
+! echo "Hello World"：!表示执行shell脚本
+watch -n 0.1 command：每0.1秒执行一次command命令
+tar：压缩文件
+tar -zcvf xxx.tar.gz /path/to/file/*：压缩
+tar -zxvf xxx.tar.gz：解压缩
+diff xxx yyy：查找文件xxx与yyy的不同点
+安装软件
+sudo command：以root身份执行command命令
+apt-get install xxx：安装软件
+pip install xxx --user --upgrade：安装python包
+```
+# 九、云服务器
+![20220604163244](https://s2.loli.net/2022/06/04/BS1FO6JWCwGbdUy.png)
+
+# 十、docker
+![20220605103435](https://s2.loli.net/2022/06/05/W7eyZON6IjMQHhE.png)
+为了避免每次使用docker命令都需要加上sudo权限，可以将当前用户加入安装中自动创建的docker用户组：
+```bash
+sudo usermod -aG docker $USER
+```
+## 镜像
+```bash
+docker pull ubuntu:20.04：拉取一个镜像
+docker images：列出本地所有镜像
+docker image rm ubuntu:20.04 或 docker rmi ubuntu:20.04：删除镜像ubuntu:20.04
+docker [container] commit CONTAINER IMAGE_NAME:TAG：创建某个container的镜像
+docker save -o ubuntu_20_04.tar ubuntu:20.04：将镜像ubuntu:20.04导出到本地文件ubuntu_20_04.tar中
+docker load -i ubuntu_20_04.tar：将镜像ubuntu:20.04从本地文件ubuntu_20_04.tar中加载出来
+```
+## 容器
+每个容器是一个完全独立的云服务器
+```bash
+docker [container] create -it ubuntu:20.04：利用镜像ubuntu:20.04创建一个容器。
+docker ps -a：查看本地的所有容器
+docker [container] start CONTAINER：启动容器
+docker [container] stop CONTAINER：停止容器
+docker [container] restart CONTAINER：重启容器
+docker [contaienr] run -itd ubuntu:20.04：创建并启动一个容器
+docker [container] attach CONTAINER：进入容器
+先按Ctrl-p，再按Ctrl-q可以挂起容器
+docker [container] exec CONTAINER COMMAND：在容器中执行命令
+docker [container] rm CONTAINER：删除容器
+docker container prune：删除所有已停止的容器
+docker export -o xxx.tar CONTAINER：将容器CONTAINER导出到本地文件xxx.tar中
+docker import xxx.tar image_name:tag：将本地文件xxx.tar导入成镜像，并将镜像命名为image_name:tag
+docker export/import与docker save/load的区别：
+export/import会丢弃历史记录和元数据信息，仅保存容器当时的快照状态
+save/load会保存完整记录，体积更大
+docker top CONTAINER：查看某个容器内的所有进程
+docker stats：查看所有容器的统计信息，包括CPU、内存、存储、网络等信息
+docker cp xxx CONTAINER:xxx 或 docker cp CONTAINER:xxx xxx：在本地和容器间复制文件
+docker rename CONTAINER1 CONTAINER2：重命名容器
+docker update CONTAINER --memory 500MB：修改容器限制
+```
+```bash
+scp /var/lib/acwing/docker/images/docker_lesson_1_0.tar server_name:  # 将镜像上传到自己租的云端服务器
+ssh server_name  # 登录自己的云端服务器
+
+docker load -i docker_lesson_1_0.tar  # 将镜像加载到本地
+docker run -p 20000:22 --name my_docker_server -itd docker_lesson:1.0  # 将容器的22端口映射为本地的20000，因本地的22端口已用于ssh登录。再去云平台控制台中修改安全组配置，放行端口20000。
+
+docker attach my_docker_server  # 进入创建的docker容器
+passwd  # 要想ssh登录，先要设置root密码
+
+ssh root@xxx.xxx.xxx.xxx -p 20000  # 将xxx.xxx.xxx.xxx替换成自己租的服务器的IP地址
+```
+```
+报错：kex_exchange_identification: read: Connection reset by peer
+解决：重启服务器
+```
+最后配置ssh免密和tmux
 
 
 ---
