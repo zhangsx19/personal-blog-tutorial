@@ -10,8 +10,13 @@ toc: true
 **摘要：acwing算法基础课学习笔记**
 <!-- more -->
 # 前言
+```c++
+O2和O3优化:
+#pragma GCC optimize(3)
 cin和scanf一样快的方法:
 ios::sync_with_stdio(false);
+
+```
 # 一、数据结构
 ## 1.链表
 ### (1)单链表

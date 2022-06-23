@@ -16,9 +16,8 @@ toc: true
 理解并背过代码模板 <--快速默写并调试通过
 题目 <--提高熟练度(写完删掉重写一遍，重复3-5遍)
 ```
-# 一、基础算法（一）
-## 排序
-### 快速排序 --基于分治
+# 排序
+## 快速排序 --基于分治
 ```
 确定分界点x：q(l),q(r),q((l+r)/2),随机
 调整区间：保证左边的数<=x,右边>=x
@@ -74,13 +73,13 @@ void quick_sort(int q[], int l, int r)
 }
 ```
 注意：分界点不一定=x
-#### 变形：第k个数
+### 变形：第k个数
 ![20220419055456](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220419055456.png)
 
 k每次更新成新区间第k小的数，所以每次新区间要重新编号
 
 时间复杂度O(2n)
-### 归并排序 --分治
+## 归并排序 --分治
 快排是先排后递归，归并是先递归再排
 ```
 确定分界点：mid = (l+r)/2
@@ -112,8 +111,8 @@ void merge_sort(int q[], int l, int r)
     for (i = l, j = 0; i <= r; i ++, j ++ ) q[i] = tmp[j];
 }
 ```
-## 二分
-### 整数二分
+# 二分
+## 整数二分
 只要看到有序序列，一定想到二分，或先排序后二分。每次保证更新的闭区间里一定有答案。
 
 ![20220414163319](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220414163319.png)
@@ -155,7 +154,7 @@ int bsearch_2(int l, int r)
 ```
 
 二分法一定有解，题目可能无解，无解时，返回值的含义是第一个满足条件的。
-### 浮点数二分
+## 浮点数二分
 保留六位小数
 ```
 r-l>=1e-8 //经验值是保留的位数+2，若不满足要求可进一步提高精度
@@ -179,9 +178,8 @@ double bsearch_3(double l, double r)
     return l;
 }
 ```
-# 二、基础算法（二）
-## 1.高精度
-### (1)高精度加法
+# 高精度
+## (1)高精度加法
 四种类型：
 ```
 A+B len(A)<=1e7
@@ -212,7 +210,7 @@ vector<int> add(vector<int> &A, vector<int> &B)
     return C;
 }
 ```
-### (2)高精度减法
+## (2)高精度减法
 ![20220415005054](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220415005054.png)
 
 模板：
@@ -234,7 +232,7 @@ vector<int> sub(vector<int> &A, vector<int> &B)
     return C;
 }
 ```
-### (3)高精度乘法
+## (3)高精度乘法
 到下一位时，权重少10倍
 
 ![20220415004903](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220415004903.png)
@@ -260,7 +258,7 @@ vector<int> mul(vector<int> &A, int b)
 }
 
 ```
-### (4)高精度除法
+## (4)高精度除法
 ![20220415004957](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220415004957.png)
 
 模板：
@@ -283,8 +281,8 @@ vector<int> div(vector<int> &A, int b, int &r)
 ```
 
 
-## 2、前缀和数组
-### (1)一维
+# 前缀和数组
+## (1)一维
 定义$S_N = a_1+a_2+...+a_N,S_0=0$,如果已经算出来了S,则[l,r]区间的a数组和为$S_r-S_{l-1}$,时间复杂度为O(1)
 模板：
 ```
@@ -302,12 +300,12 @@ int main(){
     return 0;
 }
 ```
-### (2)二维
+## (2)二维
 ![20220415121504](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220415121504.png)
 ---
 
-## 3.差分
-### (1)一维
+# 差分
+## (1)一维
 差分是前缀的逆运算
 
 ![20220418214005](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220418214005.png)
@@ -316,12 +314,80 @@ int main(){
 
 复杂度：每次+c从O(n)-->O(1)
 
-### (2)二维
+## (2)二维
 a[i][j]存放差分数组b[i][j]所有左上角的和
 
 $b_{x1,y1}+=c,则该点所有右下角的a都会+c$
 
 ![20220419003428](https://cdn.jsdelivr.net/gh/zhangsx19/PicBed/images_for_blogs20220419003428.png)
+
+# 双指针算法
+关键是单调性：即i++时j只能向一个方向移动
+![20220609115221](https://s2.loli.net/2022/06/09/S4LAxfKXtTDMmPV.png)
+## 最长连续不重复子序列
+![20220609142340](https://s2.loli.net/2022/06/09/nAsZ17WRV3zyxgU.png)
+## 数组元素的目标和
+![20220609194409](https://s2.loli.net/2022/06/09/SYgqO6WwK7P8EGH.png)
+# 判断子序列
+
+# 位运算
+![20220609142952](https://s2.loli.net/2022/06/09/2Qcuv5ay8FztT1i.png)
+补码=反码+1
+![20220609143241](https://s2.loli.net/2022/06/09/72541oEhdvtyJjF.png)
+## 二进制中1的个数
+```c++
+求n的第k位数字: n >> k & 1
+返回n的最后一位1：lowbit(n) = n & -n
+while(x)x-=lowbit(x),res++;
+```
+# 离散化
+值域跨度很大，但用到的数字不多=>压缩
+## 区间和
+```c++
+vector<int> alls; // 存储所有待离散化的值
+sort(alls.begin(), alls.end()); // 将所有值排序
+alls.erase(unique(alls.begin(), alls.end()), alls.end());   // 去掉重复元素
+
+// 二分求出x对应的离散化的值
+int find(int x) // 找到第一个大于等于x的位置
+{
+    int l = 0, r = alls.size() - 1;
+    while (l < r)
+    {
+        int mid = l + r >> 1;
+        if (alls[mid] >= x) r = mid;
+        else l = mid + 1;
+    }
+    return r + 1; // 映射到1, 2, ...n
+}
+```
+
+# 区间合并
+因为是按左端点从小到大排序遍历，所以以后的区间都与当前区间无交集=>结果加1，更新当前区间
+![20220609190355](https://s2.loli.net/2022/06/09/mRoSy6jeipI8GVl.png)
+```c++
+// 将所有存在交集的区间合并
+void merge(vector<PII> &segs)
+{
+    vector<PII> res;
+
+    sort(segs.begin(), segs.end());
+
+    int st = -2e9, ed = -2e9;
+    for (auto seg : segs)
+        if (ed < seg.first)
+        {
+            if (st != -2e9) res.push_back({st, ed});
+            st = seg.first, ed = seg.second;
+        }
+        else ed = max(ed, seg.second);
+
+    if (st != -2e9) res.push_back({st, ed});
+
+    segs = res;
+}
+```
+
 
 ---
 # 总结

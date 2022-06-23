@@ -527,6 +527,7 @@ dom:有道翻译
 [xss绕过](https://blog.csdn.net/nigo134/article/details/118827542)
 
 # 四、ctfshow
+flag格式ctfshow{8-4-4-4-12}
 ## 爆破
 ```py
 from hashlib import md5
