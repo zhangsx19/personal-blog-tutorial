@@ -387,6 +387,90 @@ utils文件夹存辅助函数
 
 一些不变的功能(如血条、计时器)不要在canvas里渲染，因为它1s会渲染60次，比较耗费资源
 
+# 六、vue
+## 文件目录
+```
+view是每个网站页面
+router存的是跳转路由
+components存组件
+根组件是app.vue
+入口在main.js
+store就是vuex
+```
+每个.vue文件由三部分组成：html、js、css
+css加scope会为当前页面的组件添加一个随机值，即特例化，不会影响到其他页面
+## 渲染框架
+后端渲染：每请求一个页面就向后端请求一次
+前端渲染：第一次返回所有页面，样式存在一个js文件里
+## 网站架构
+![20220701213505](https://s2.loli.net/2022/07/01/TInvzKWVwRsYEmC.png)
+## script部分
+```js
+export default对象的属性：
+name：组件的名称
+components：存储<template>中用到的所有组件
+props：存储父组件传递给子组件的数据
+watch()：当某个数据发生变化时触发
+computed：动态计算某个数据
+setup(props, context)：初始化变量、函数
+ref定义变量，可以用.value属性重新赋值
+reactive定义对象，不可重新赋值
+props存储父组件传递过来的数据
+context.emit()：触发父组件绑定的函数
+```
+引入bootstrap
+```js
+<script>
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap/dist/js/bootstrap";
+</script>
+```
+提示错误`Error: Can't resolve '@popperjs/core'`,需单独装下这个模块，直接在依赖里搜索
+每个页面都需要用到NavBar组件=>在根组件里import(注意内容不能变)
+## template部分
+```html
+<div class="container-fluid"></div>更偏左些，删去fluid则不靠边
+bootstrap的card=>每个内容是一张卡片
+bootstrap的container=>响应式地调整中间内容区域的大小
+公共部分最好是用1个组件实现出来
+<slot></slot>：存放父组件传过来的children。
+v-on:click或@click属性：绑定事件
+v-if、v-else、v-else-if属性：判断
+v-for属性：循环，:key循环的每个元素需要有唯一的key
+v-bind:或:：绑定属性
+style部分
+<style>标签添加scope属性后，不同组件间的css不会相互影响。
+```
+## style部分
+```css
+<style>标签添加scope属性后，不同组件间的css不会相互影响。
+```
+## router
+```html
+特殊属性:to (在vue里想给某个标签绑定属性要用冒号)
+<router-link class="nav-link active" aria-current="page" :to="{name: 'home', params: {}}">首页</router-link>
+name即为router里定义的name
+```
+## 页面布局
+```
+1.bootstrap的grid system 可分配每部分占的长宽
+2.通过 Bootstrap 所提供的 .img-fluid 类让图片支持响应式布局。其原理是将 max-width: 100%; 和 height: auto; 赋予图片，以便随父元素的宽度变化一起缩放。
+```
+```
+需要交互的数据存放到最顶层的组件里(如UserProfileView.vue),父子组件传递数值：父组件通过props，子组件通过event调用函数的方式实现
+v-bind:user="user",不是一个普通的字符串，而是一个可传递的表达式
+```
+## 第三方组件
+```html
+view-router包：实现路由功能。<router-view />
+vuex：存储全局状态，全局唯一。
+state: 存储所有数据，可以用modules属性划分成若干模块
+getters：根据state中的值计算新的值
+mutations：所有对state的修改操作都需要定义在这里，不支持异步，可以通过$store.commit()触发
+actions：定义对state的复杂修改操作，支持异步，可以通过$store.dispatch()触发。注意不能直接修改state，只能通过mutations修改state。
+modules：定义state的子模块
+```
+
 ---
 # 总结
 
